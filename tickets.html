@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting... | Arthuzist</title>
+    <meta http-equiv="refresh" content="0; url=chat.html">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0c;
+            color: #f5f5f7;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .redirect-message {
+            text-align: center;
+        }
+        .redirect-message h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .redirect-message p {
+            color: #9898a0;
+        }
+        .redirect-message a {
+            color: #d4af37;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-message">
+        <h1>Redirecting to Messages...</h1>
+        <p>If you are not redirected, <a href="chat.html">click here</a>.</p>
+    </div>
+    <script>
+        window.location.href = 'chat.html';
+    </script>
+</body>
+</html>

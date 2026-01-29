@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews | Arthuzist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .reviews-page{min-height:100vh;padding:100px 0 60px;background:var(--bg-primary)}
+        .container{max-width:1200px;margin:0 auto;padding:0 var(--container-padding)}
+        .reviews-header{text-align:center;margin-bottom:3rem}
+        .reviews-header h1{font-family:var(--font-display);font-size:2.5rem;margin-bottom:0.5rem}
+        .stats-bar{display:flex;justify-content:center;gap:4rem;padding:2rem;background:var(--bg-secondary);border:1px solid var(--border-dark);margin-bottom:3rem}
+        .stat-item{text-align:center}
+        .stat-value{font-family:var(--font-display);font-size:2rem;color:var(--gold)}
+        .stat-label{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+        .write-review{max-width:600px;margin:0 auto 3rem;background:var(--bg-card);border:1px solid var(--border-dark);padding:2rem}
+        .write-review h2{font-family:var(--font-heading);font-size:1.25rem;text-align:center;margin-bottom:1.5rem}
+        .login-prompt{text-align:center;padding:1rem}
+        .star-rating{display:flex;justify-content:center;gap:0.5rem;margin-bottom:1.5rem}
+        .star-rating .star{font-size:2rem;color:var(--border-dark);cursor:pointer;transition:0.2s}
+        .star-rating .star:hover,.star-rating .star.active{color:var(--gold)}
+        .form-group{margin-bottom:1.25rem}
+        .form-group label{display:block;font-size:0.75rem;font-weight:600;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.5rem}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:0.9rem;background:var(--bg-secondary);border:1px solid var(--border-dark);color:var(--text-primary);font-size:1rem}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--gold)}
+        .btn-submit{width:100%;padding:1rem;background:var(--gold);color:var(--bg-void);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s ease;-webkit-tap-highlight-color:transparent}
+        .btn-submit:hover{background:var(--gold-light);transform:translateY(-2px)}
+        .btn-submit:active{transform:scale(0.98)}
+        .btn-submit:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+        .reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:1.5rem}
+        .review-card{background:var(--bg-card);border:1px solid var(--border-dark);padding:1.5rem;transition:0.3s}
+        .review-card:hover{border-color:var(--gold-dark)}
+        .review-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem}
+        .reviewer-info{display:flex;align-items:center;gap:0.75rem}
+        .reviewer-avatar{width:45px;height:45px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-void)}
+        .reviewer-name{font-family:var(--font-heading)}
+        .reviewer-date{font-size:0.75rem;color:var(--text-muted)}
+        .review-stars{color:var(--gold)}
+        .review-stars .empty{color:var(--border-dark)}
+        .review-service{display:inline-block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);background:rgba(212,175,55,0.1);padding:0.25rem 0.75rem;margin-bottom:0.75rem}
+        .review-text{font-size:0.95rem;color:var(--text-secondary);line-height:1.6}
+        @media(max-width:768px){.stats-bar{flex-direction:column;gap:1.5rem}.reviews-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <nav class="navbar scrolled"><div class="nav-container"><a href="index.html" class="nav-logo"><svg class="logo-icon" viewBox="0 0 50 50" style="width:28px;height:28px;color:var(--gold)"><path d="M25 2L30 20H48L34 32L40 50L25 38L10 50L16 32L2 20H20L25 2Z" fill="currentColor"/></svg><span class="logo-text">Arthuzist</span></a><div class="nav-menu"><a href="index.html#gallery" class="nav-link">Gallery</a><a href="index.html#services" class="nav-link">Services</a><a href="index.html#pricing" class="nav-link">Pricing</a><a href="testimonials.html" class="nav-link active">Reviews</a></div><div class="nav-actions"><a href="auth.html" class="nav-btn nav-btn-primary" id="authBtn">Sign In</a></div></div></nav>
+
+    <main class="reviews-page">
+        <div class="container">
+            <div class="reviews-header"><h1>Client Reviews</h1><p style="color:var(--text-secondary)">Real stories from real clients</p></div>
+            <div class="stats-bar"><div class="stat-item"><div class="stat-value" id="totalReviews">0</div><div class="stat-label">Happy Clients</div></div><div class="stat-item"><div class="stat-value" id="avgRating">5.0</div><div class="stat-label">Avg Rating</div></div><div class="stat-item"><div class="stat-value">100%</div><div class="stat-label">Satisfaction</div></div></div>
+            <div class="write-review">
+                <h2>Share Your Experience</h2>
+                <div class="login-prompt" id="loginPrompt"><p style="color:var(--text-muted);margin-bottom:1rem">Please sign in to leave a review</p><a href="auth.html" class="btn-submit" style="display:inline-block;width:auto;padding:0.75rem 1.5rem">Sign In</a></div>
+                <form id="reviewForm" style="display:none">
+                    <div class="star-rating" id="starRating"><span class="star active" data-rating="1">★</span><span class="star active" data-rating="2">★</span><span class="star active" data-rating="3">★</span><span class="star active" data-rating="4">★</span><span class="star active" data-rating="5">★</span></div>
+                    <div class="form-group"><label>Service Received</label><select id="reviewService" required><option value="">Select</option><option value="Charcoal Portrait">Charcoal Portrait</option><option value="Anime Art">Anime Art</option><option value="Couple Portrait">Couple Portrait</option></select></div>
+                    <div class="form-group"><label>Your Review</label><textarea id="reviewText" rows="4" required placeholder="Tell others about your experience..."></textarea></div>
+                    <button type="submit" class="btn-submit">Submit Review</button>
+                </form>
+            </div>
+            <div class="reviews-grid" id="reviewsGrid"></div>
+        </div>
+    </main>
+
+    <footer class="footer"><div class="footer-bottom"><div class="container"><p style="text-align:center;font-size:0.85rem;color:var(--text-muted)">© 2025 Arthuzist. All rights reserved.</p></div></div></footer>
+
+    <div class="toast" id="toast"><div class="toast-icon"></div><span class="toast-message"></span></div>
+
+    <script>
+        const STORAGE={reviews:'arthuzist_reviews',currentUser:'arthuzist_currentUser'};
+        let currentRating=5;
+
+        document.addEventListener('DOMContentLoaded',()=>{checkAuth();initStars();initForm();loadReviews();updateStats()});
+
+        function checkAuth(){const user=JSON.parse(localStorage.getItem(STORAGE.currentUser));const authBtn=document.getElementById('authBtn');if(user){authBtn.textContent=user.name.split(' ')[0];document.getElementById('loginPrompt').style.display='none';document.getElementById('reviewForm').style.display='block'}}
+
+        function initStars(){document.querySelectorAll('.star-rating .star').forEach(star=>{star.addEventListener('click',()=>{currentRating=parseInt(star.dataset.rating);updateStars()})})}
+
+        function updateStars(){document.querySelectorAll('.star-rating .star').forEach((star,i)=>{star.classList.toggle('active',i<currentRating)})}
+
+        function initForm(){document.getElementById('reviewForm').addEventListener('submit',e=>{e.preventDefault();const user=JSON.parse(localStorage.getItem(STORAGE.currentUser));if(!user)return;const review={id:Date.now().toString(36),userId:user.id,userName:user.name,rating:currentRating,service:document.getElementById('reviewService').value,text:document.getElementById('reviewText').value,date:new Date().toISOString()};const reviews=JSON.parse(localStorage.getItem(STORAGE.reviews)||'[]');reviews.unshift(review);localStorage.setItem(STORAGE.reviews,JSON.stringify(reviews));e.target.reset();currentRating=5;updateStars();loadReviews();updateStats();showToast('Thanks for your review!','success')})}
+
+        function loadReviews(){let reviews=JSON.parse(localStorage.getItem(STORAGE.reviews)||'[]');if(reviews.length===0){reviews=[{userName:'Priya S.',rating:5,service:'Couple Portrait',text:'Absolutely stunning work! The attention to detail was incredible.',date:'2025-01-15'},{userName:'Rahul V.',rating:5,service:'Anime Art',text:'Perfect fan art! The dark gothic style added such a unique touch.',date:'2025-01-10'},{userName:'Ananya P.',rating:5,service:'Charcoal Portrait',text:'A truly moving piece. Everyone in the family was impressed.',date:'2025-01-05'}];localStorage.setItem(STORAGE.reviews,JSON.stringify(reviews))}document.getElementById('reviewsGrid').innerHTML=reviews.map(r=>`<div class="review-card"><div class="review-header"><div class="reviewer-info"><div class="reviewer-avatar">${r.userName.split(' ').map(n=>n[0]).join('')}</div><div><div class="reviewer-name">${r.userName}</div><div class="reviewer-date">${new Date(r.date).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'})}</div></div></div><div class="review-stars">${'★'.repeat(r.rating)}<span class="empty">${'★'.repeat(5-r.rating)}</span></div></div><span class="review-service">${r.service}</span><p class="review-text">${r.text}</p></div>`).join('')}
+
+        function updateStats(){const reviews=JSON.parse(localStorage.getItem(STORAGE.reviews)||'[]');document.getElementById('totalReviews').textContent=reviews.length;const avg=reviews.length?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):'5.0';document.getElementById('avgRating').textContent=avg}
+
+        function showToast(msg,type){const t=document.getElementById('toast');t.className='toast '+type+' show';t.querySelector('.toast-message').textContent=msg;setTimeout(()=>t.classList.remove('show'),3000)}
+    </script>
+</body>
+</html>

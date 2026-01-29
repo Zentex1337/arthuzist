@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Logs | Super Admin</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #7f1d1d; margin-bottom: 30px; }
+        .header h1 { font-size: 24px; color: #f87171; display: flex; align-items: center; gap: 10px; }
+        .header-links { display: flex; gap: 15px; align-items: center; }
+        .header-links a { color: #888; text-decoration: none; font-size: 14px; }
+        .header-links a:hover { color: #fff; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab-btn { padding: 12px 24px; background: #1a1a1a; border: 1px solid #333; color: #888; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .tab-btn:hover { background: #222; color: #fff; }
+        .tab-btn.active { background: #7f1d1d; color: #fff; border-color: #991b1b; }
+
+        /* Stats */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 20px; }
+        .stat-label { font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: bold; color: #f87171; }
+
+        /* Card */
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .card-header { padding: 15px 20px; border-bottom: 1px solid #333; background: #151515; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 16px; font-weight: 600; color: #f87171; }
+        .card-body { padding: 0; overflow-x: auto; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #222; }
+        th { font-size: 10px; color: #666; text-transform: uppercase; background: #111; position: sticky; top: 0; }
+        td { font-size: 13px; }
+        tr:hover { background: #1f1f1f; }
+
+        /* Badge */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+        .badge-admin { background: #7f1d1d; color: #fca5a5; }
+        .badge-user { background: #1e3a5f; color: #93c5fd; }
+        .badge-guest { background: #3d3d0f; color: #fde047; }
+        .badge-active { background: #14532d; color: #86efac; }
+        .badge-banned { background: #450a0a; color: #fca5a5; }
+
+        /* Info Box */
+        .info-box { background: #111; border-radius: 6px; padding: 8px 12px; font-size: 11px; margin-top: 4px; }
+        .info-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .info-item { color: #666; }
+        .info-item span { color: #999; }
+
+        /* User Agent */
+        .ua { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: #666; }
+
+        /* IP */
+        .ip { font-family: monospace; color: #f87171; font-size: 12px; }
+
+        /* Expandable */
+        .expandable { cursor: pointer; }
+        .expand-content { display: none; padding: 15px; background: #111; border-top: 1px solid #222; }
+        .expand-content.show { display: block; }
+
+        /* Search */
+        .search-box { padding: 10px 15px; background: #111; border: 1px solid #333; border-radius: 6px; color: #fff; width: 250px; font-size: 13px; }
+        .search-box:focus { outline: none; border-color: #7f1d1d; }
+
+        /* Button */
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: none; }
+        .btn-ghost { background: transparent; color: #888; border: 1px solid #333; }
+        .btn-ghost:hover { background: #222; color: #fff; }
+
+        /* Empty */
+        .empty { padding: 40px; text-align: center; color: #666; }
+
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Order List */
+        .order-list { display: flex; flex-direction: column; gap: 8px; }
+        .order-item { background: #0a0a0a; border-radius: 4px; padding: 8px 12px; font-size: 12px; display: flex; justify-content: space-between; }
+
+        /* Money */
+        .money { color: #4ade80; font-weight: 600; }
+
+        /* Access Denied */
+        .access-denied { text-align: center; padding: 100px 20px; }
+        .access-denied h2 { color: #f87171; margin-bottom: 20px; }
+        .access-denied p { color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#f87171" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M12 8v4M12 16h.01"/>
+                </svg>
+                Advanced Logs
+            </h1>
+            <div class="header-links">
+                <span id="adminEmail" style="color:#f87171;">Loading...</span>
+                <a href="index.html">Back to Admin</a>
+                <a href="../logout.html" style="color:#888;">Logout</a>
+            </div>
+        </div>
+
+        <div id="mainContent">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('users')">All Users</button>
+                <button class="tab-btn" onclick="showTab('customers')">Customers</button>
+                <button class="tab-btn" onclick="showTab('admins')">Admin Actions</button>
+                <button class="tab-btn" onclick="showTab('sessions')">Active Sessions</button>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="tab-content active" id="tab-users">
+                <div class="stats" id="userStats"></div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">All Registered Users</span>
+                        <input type="text" class="search-box" placeholder="Search email, name, IP..." id="userSearch" onkeyup="filterUsers()">
+                    </div>
+                    <div class="card-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Contact</th>
+                                    <th>Role</th>
+                                    <th>Last IP</th>
+                                    <th>Last Login</th>
+                                    <th>Activity</th>
+                                    <th>Stats</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <tr><td colspan="7" class="empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Tab -->
+            <div class="tab-content" id="tab-customers">
+                <div class="stats" id="customerStats"></div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Customers & Orders</span>
+                        <input type="text" class="search-box" placeholder="Search..." id="customerSearch" onkeyup="filterCustomers()">
+                    </div>
+                    <div class="card-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Contact</th>
+                                    <th>Type</th>
+                                    <th>Orders</th>
+                                    <th>Total Spent</th>
+                                    <th>Last IP</th>
+                                    <th>Order History</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersTable">
+                                <tr><td colspan="7" class="empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admins Tab -->
+            <div class="tab-content" id="tab-admins">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Admin Activity Logs</span>
+                        <select id="adminFilter" onchange="loadAdminLogs()" style="padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+                            <option value="">All Admins</option>
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Admin</th>
+                                    <th>Action</th>
+                                    <th>Resource</th>
+                                    <th>Details</th>
+                                    <th>IP</th>
+                                    <th>User Agent</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLogsTable">
+                                <tr><td colspan="7" class="empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sessions Tab -->
+            <div class="tab-content" id="tab-sessions">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Active Sessions</span>
+                        <button class="btn btn-ghost" onclick="loadSessions()">Refresh</button>
+                    </div>
+                    <div class="card-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>IP Address</th>
+                                    <th>Device</th>
+                                    <th>Login Time</th>
+                                    <th>Expires</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionsTable">
+                                <tr><td colspan="6" class="empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="accessDenied" style="display:none;" class="access-denied">
+            <h2>Access Denied</h2>
+            <p>This page is only accessible to Super Admins.</p>
+            <a href="index.html" style="color:#f87171;">Go to Admin Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+    const API = '/api';
+    const SUPER_ADMIN_EMAILS = ['adeeb69@aol.com'];
+    let allUsers = [];
+    let allCustomers = [];
+    let currentUser = null;
+
+    // Token handling
+    function getToken() {
+        try {
+            return localStorage.getItem('arthuzist_token') || sessionStorage.getItem('arthuzist_token');
+        } catch(e) { return null; }
+    }
+
+    function doLogout() {
+        fetch('/api/auth?action=logout', {
+            method: 'POST',
+            credentials: 'include'
+        }).finally(() => {
+            try { localStorage.clear(); } catch(e) {}
+            try { sessionStorage.clear(); } catch(e) {}
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+            window.location.replace('../auth.html');
+        });
+    }
+
+    async function api(url) {
+        const token = getToken();
+        if (!token) { location.href = '../auth.html'; return; }
+
+        const res = await fetch(API + url, {
+            credentials: 'include',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) { location.href = '../auth.html'; return; }
+        if (res.status === 403) {
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('accessDenied').style.display = 'block';
+            return null;
+        }
+
+        return await res.json();
+    }
+
+    function esc(s) {
+        if (!s) return '-';
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function formatDate(d) {
+        if (!d) return '-';
+        const date = new Date(d);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+               date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatRelative(d) {
+        if (!d) return 'Never';
+        const diff = Date.now() - new Date(d).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'Just now';
+        if (mins < 60) return mins + 'm ago';
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + 'h ago';
+        const days = Math.floor(hours / 24);
+        if (days < 30) return days + 'd ago';
+        return formatDate(d);
+    }
+
+    function parseUA(ua) {
+        if (!ua) return 'Unknown';
+        if (ua.includes('iPhone')) return 'iPhone';
+        if (ua.includes('iPad')) return 'iPad';
+        if (ua.includes('Android')) return 'Android';
+        if (ua.includes('Windows')) return 'Windows';
+        if (ua.includes('Mac')) return 'Mac';
+        if (ua.includes('Linux')) return 'Linux';
+        return 'Other';
+    }
+
+    // Tabs
+    function showTab(name) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        event.target.classList.add('active');
+
+        if (name === 'users') loadUsers();
+        if (name === 'customers') loadCustomers();
+        if (name === 'admins') loadAdminLogs();
+        if (name === 'sessions') loadSessions();
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = getToken();
+        if (!token) { location.href = '../auth.html'; return; }
+
+        try {
+            const data = await api('/auth?action=me');
+            if (!data?.user) { location.href = '../auth.html'; return; }
+
+            currentUser = data.user;
+            document.getElementById('adminEmail').textContent = data.user.email;
+
+            // Check super admin
+            if (!SUPER_ADMIN_EMAILS.includes(data.user.email)) {
+                document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('accessDenied').style.display = 'block';
+                return;
+            }
+
+            loadUsers();
+        } catch (e) {
+            console.error('Auth error:', e);
+            location.href = '../auth.html';
+        }
+    });
+
+    // Load Users
+    async function loadUsers() {
+        try {
+            const data = await api('/admin?action=advanced-users&limit=200');
+            if (!data) return;
+
+            allUsers = data.users || [];
+
+            // Stats
+            const totalUsers = allUsers.length;
+            const activeToday = allUsers.filter(u => u.last_login && (Date.now() - new Date(u.last_login).getTime()) < 86400000).length;
+            const admins = allUsers.filter(u => u.role === 'admin').length;
+            const banned = allUsers.filter(u => u.banned).length;
+
+            document.getElementById('userStats').innerHTML = `
+                <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">${totalUsers}</div></div>
+                <div class="stat-card"><div class="stat-label">Active Today</div><div class="stat-value">${activeToday}</div></div>
+                <div class="stat-card"><div class="stat-label">Admins</div><div class="stat-value">${admins}</div></div>
+                <div class="stat-card"><div class="stat-label">Banned</div><div class="stat-value">${banned}</div></div>
+            `;
+
+            renderUsers(allUsers);
+        } catch (e) {
+            console.error('Load users error:', e);
+        }
+    }
+
+    function renderUsers(users) {
+        if (!users.length) {
+            document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="empty">No users found</td></tr>';
+            return;
+        }
+
+        document.getElementById('usersTable').innerHTML = users.map(u => `
+            <tr>
+                <td>
+                    <div style="font-weight:600;">${esc(u.name)}</div>
+                    <div style="font-size:11px;color:#666;">${esc(u.email)}</div>
+                </td>
+                <td>
+                    <div style="font-size:12px;">${esc(u.phone) || '-'}</div>
+                </td>
+                <td>
+                    <span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role}</span>
+                    ${u.banned ? '<span class="badge badge-banned" style="margin-left:4px;">BANNED</span>' : ''}
+                </td>
+                <td><span class="ip">${esc(u.last_ip) || '-'}</span></td>
+                <td>
+                    <div>${formatRelative(u.last_login)}</div>
+                    <div style="font-size:10px;color:#666;">${formatDate(u.last_login)}</div>
+                </td>
+                <td>
+                    ${u.last_activity ? `
+                        <div style="font-size:12px;color:#f87171;">${esc(u.last_activity.action)}</div>
+                        <div style="font-size:10px;color:#666;">${formatRelative(u.last_activity.created_at)}</div>
+                    ` : '<span style="color:#666;">-</span>'}
+                </td>
+                <td>
+                    <div style="font-size:12px;">${u.order_count} orders</div>
+                    <div style="font-size:11px;color:#666;">${u.ticket_count} tickets</div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function filterUsers() {
+        const q = document.getElementById('userSearch').value.toLowerCase();
+        const filtered = allUsers.filter(u =>
+            (u.email || '').toLowerCase().includes(q) ||
+            (u.name || '').toLowerCase().includes(q) ||
+            (u.last_ip || '').includes(q) ||
+            (u.phone || '').includes(q)
+        );
+        renderUsers(filtered);
+    }
+
+    // Load Customers
+    async function loadCustomers() {
+        try {
+            const data = await api('/admin?action=advanced-customers&limit=200');
+            if (!data) return;
+
+            allCustomers = data.customers || [];
+
+            // Stats
+            const totalCustomers = allCustomers.length;
+            const totalRevenue = allCustomers.reduce((sum, c) => sum + c.total_spent, 0);
+            const guests = allCustomers.filter(c => c.is_guest).length;
+            const repeatCustomers = allCustomers.filter(c => c.total_orders > 1).length;
+
+            document.getElementById('customerStats').innerHTML = `
+                <div class="stat-card"><div class="stat-label">Total Customers</div><div class="stat-value">${totalCustomers}</div></div>
+                <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value money">₹${totalRevenue.toLocaleString()}</div></div>
+                <div class="stat-card"><div class="stat-label">Guest Orders</div><div class="stat-value">${guests}</div></div>
+                <div class="stat-card"><div class="stat-label">Repeat Customers</div><div class="stat-value">${repeatCustomers}</div></div>
+            `;
+
+            renderCustomers(allCustomers);
+        } catch (e) {
+            console.error('Load customers error:', e);
+        }
+    }
+
+    function renderCustomers(customers) {
+        if (!customers.length) {
+            document.getElementById('customersTable').innerHTML = '<tr><td colspan="7" class="empty">No customers found</td></tr>';
+            return;
+        }
+
+        document.getElementById('customersTable').innerHTML = customers.map(c => `
+            <tr>
+                <td>
+                    <div style="font-weight:600;">${esc(c.name)}</div>
+                    <div style="font-size:11px;color:#666;">${esc(c.email)}</div>
+                </td>
+                <td>${esc(c.phone) || '-'}</td>
+                <td><span class="badge ${c.is_guest ? 'badge-guest' : 'badge-user'}">${c.is_guest ? 'Guest' : 'Registered'}</span></td>
+                <td><strong>${c.total_orders}</strong></td>
+                <td><span class="money">₹${c.total_spent.toLocaleString()}</span></td>
+                <td><span class="ip">${esc(c.last_ip) || '-'}</span></td>
+                <td>
+                    <div class="order-list">
+                        ${c.orders.slice(0, 3).map(o => `
+                            <div class="order-item">
+                                <span>${esc(o.order_number)} - ${esc(o.service)}</span>
+                                <span class="${o.paid ? 'money' : ''}">${o.paid ? '₹'+o.total : o.status}</span>
+                            </div>
+                        `).join('')}
+                        ${c.orders.length > 3 ? `<div style="font-size:11px;color:#666;">+${c.orders.length - 3} more</div>` : ''}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function filterCustomers() {
+        const q = document.getElementById('customerSearch').value.toLowerCase();
+        const filtered = allCustomers.filter(c =>
+            (c.email || '').toLowerCase().includes(q) ||
+            (c.name || '').toLowerCase().includes(q) ||
+            (c.phone || '').includes(q)
+        );
+        renderCustomers(filtered);
+    }
+
+    // Load Admin Logs
+    async function loadAdminLogs() {
+        try {
+            const data = await api('/admin?action=advanced-admins&limit=200');
+            if (!data) return;
+
+            // Populate admin filter
+            const filter = document.getElementById('adminFilter');
+            const currentVal = filter.value;
+            filter.innerHTML = '<option value="">All Admins</option>' +
+                (data.admins || []).map(a => `<option value="${a.id}" ${a.id === currentVal ? 'selected' : ''}>${esc(a.name)} (${esc(a.email)})</option>`).join('');
+
+            let logs = data.logs || [];
+            if (currentVal) {
+                logs = logs.filter(l => l.user_id === currentVal);
+            }
+
+            if (!logs.length) {
+                document.getElementById('adminLogsTable').innerHTML = '<tr><td colspan="7" class="empty">No admin logs found</td></tr>';
+                return;
+            }
+
+            document.getElementById('adminLogsTable').innerHTML = logs.map(l => `
+                <tr>
+                    <td>
+                        <div>${formatRelative(l.created_at)}</div>
+                        <div style="font-size:10px;color:#666;">${formatDate(l.created_at)}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;color:#f87171;">${esc(l.admin?.name)}</div>
+                        <div style="font-size:11px;color:#666;">${esc(l.admin?.email)}</div>
+                    </td>
+                    <td><span class="badge badge-admin">${esc(l.action)}</span></td>
+                    <td>
+                        <div style="font-size:12px;">${esc(l.resource_type) || '-'}</div>
+                        <div style="font-size:10px;color:#666;font-family:monospace;">${esc(l.resource_id?.slice(0, 8)) || ''}</div>
+                    </td>
+                    <td style="max-width:200px;font-size:11px;color:#888;">${formatDetails(l.details)}</td>
+                    <td><span class="ip">${esc(l.ip_address) || '-'}</span></td>
+                    <td><span class="ua" title="${esc(l.user_agent)}">${parseUA(l.user_agent)}</span></td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            console.error('Load admin logs error:', e);
+        }
+    }
+
+    function formatDetails(details) {
+        if (!details) return '-';
+        try {
+            const obj = typeof details === 'string' ? JSON.parse(details) : details;
+            return Object.entries(obj).slice(0, 3).map(([k, v]) => `<strong>${k}:</strong> ${String(v).slice(0, 30)}`).join(', ');
+        } catch { return String(details).slice(0, 50); }
+    }
+
+    // Load Sessions
+    async function loadSessions() {
+        try {
+            const data = await api('/admin?action=advanced-sessions&limit=200');
+            if (!data) return;
+
+            const sessions = data.sessions || [];
+
+            if (!sessions.length) {
+                document.getElementById('sessionsTable').innerHTML = '<tr><td colspan="6" class="empty">No active sessions</td></tr>';
+                return;
+            }
+
+            document.getElementById('sessionsTable').innerHTML = sessions.map(s => `
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">${esc(s.users?.name)}</div>
+                        <div style="font-size:11px;color:#666;">${esc(s.users?.email)}</div>
+                    </td>
+                    <td><span class="badge ${s.users?.role === 'admin' ? 'badge-admin' : 'badge-user'}">${s.users?.role}</span></td>
+                    <td><span class="ip">${esc(s.ip_address) || '-'}</span></td>
+                    <td><span class="ua" title="${esc(s.user_agent)}">${parseUA(s.user_agent)}</span></td>
+                    <td>${formatRelative(s.created_at)}</td>
+                    <td>
+                        <div>${formatDate(s.expires_at)}</div>
+                        <div style="font-size:10px;color:#4ade80;">Active</div>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            console.error('Load sessions error:', e);
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "arthuzist-website",
+  "version": "3.0.0",
+  "description": "Arthuzist - Dark Art Commissions Website with Secure Backend",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build required'",
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.6.0",
+    "dotenv": "^17.2.3",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "razorpay": "^2.9.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

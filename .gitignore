@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Environment files - NEVER commit these
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.staging
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build output
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# Vercel
+.vercel/
+
+# Secrets - NEVER commit
+*.pem
+*.key
+credentials.json
+secrets.json
+service-account*.json
+
+# Claude
+.claude/

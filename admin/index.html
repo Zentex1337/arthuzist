@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Arthuzist</title>
+    <script>
+        // Ensure consistent domain (www)
+        if (location.hostname === 'arthuzist.com') {
+            location.href = location.href.replace('arthuzist.com', 'www.arthuzist.com');
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111; color: #fff; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        .header h1 { font-size: 24px; color: #f5c518; }
+        .header-user { font-size: 14px; color: #888; }
+
+        /* Nav */
+        .nav { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav button { padding: 10px 20px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .nav button:hover { background: #333; }
+        .nav button.active { background: #f5c518; color: #000; border-color: #f5c518; }
+
+        /* Stats */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+        .stat-label { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 32px; font-weight: bold; }
+        .stat-value.gold { color: #f5c518; }
+
+        /* Card */
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px; }
+        .card-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 16px; font-weight: 600; }
+        .card-body { padding: 0; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #333; }
+        th { font-size: 11px; color: #888; text-transform: uppercase; background: #151515; }
+        td { font-size: 14px; }
+        tr:hover { background: #222; }
+
+        .ticket-id { color: #f5c518; font-family: monospace; }
+
+        /* Badge */
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-open { background: #0f3d0f; color: #4ade80; }
+        .badge-pending { background: #3d3d0f; color: #facc15; }
+        .badge-closed { background: #3d0f0f; color: #f87171; }
+        .badge-admin { background: #3d3d0f; color: #f5c518; }
+
+        /* Buttons */
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: none; }
+        .btn-primary { background: #f5c518; color: #000; }
+        .btn-primary:hover { background: #d4a817; }
+        .btn-ghost { background: transparent; color: #888; border: 1px solid #333; }
+        .btn-ghost:hover { background: #222; color: #fff; }
+        .btn-danger { background: #7f1d1d; color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* Bulk */
+        .bulk-bar { display: none; padding: 12px 16px; background: #2d2d0f; border-bottom: 1px solid #333; align-items: center; gap: 10px; }
+        .bulk-bar.show { display: flex; }
+        .bulk-count { color: #f5c518; font-weight: 600; }
+
+        /* Tabs */
+        .tab { display: none; }
+        .tab.active { display: block; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-box { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow: auto; }
+        .modal-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
+        .modal-title { font-size: 18px; }
+        .modal-close { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* Messages */
+        .messages { max-height: 300px; overflow-y: auto; margin-bottom: 15px; }
+        .msg { margin-bottom: 12px; max-width: 80%; }
+        .msg.user { margin-right: auto; }
+        .msg.admin { margin-left: auto; }
+        .msg-name { font-size: 11px; color: #888; margin-bottom: 4px; }
+        .msg.admin .msg-name { color: #f5c518; text-align: right; }
+        .msg-text { padding: 10px 14px; border-radius: 12px; font-size: 14px; }
+        .msg.user .msg-text { background: #333; }
+        .msg.admin .msg-text { background: #3d3d0f; }
+
+        /* Form */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #111; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #f5c518; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; transform: translateX(200%); transition: transform 0.3s; z-index: 2000; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: #4ade80; }
+        .toast.error { border-color: #f87171; }
+
+        /* Empty */
+        .empty { padding: 40px; text-align: center; color: #666; }
+
+        /* Checkbox */
+        input[type="checkbox"] { width: 16px; height: 16px; accent-color: #f5c518; }
+
+        /* Copy Button */
+        .btn-copy {
+            background: transparent;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 4px;
+            cursor: pointer;
+            color: #888;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-copy:hover {
+            background: #333;
+            color: #f5c518;
+            border-color: #f5c518;
+        }
+
+        /* Keyboard hint */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #666;
+        }
+        .keyboard-hint kbd {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #f5c518;
+            margin: 0 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><svg viewBox="0 0 24 24" width="24" height="24" fill="#f5c518" style="vertical-align:middle;margin-right:8px;"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>Arthuzist Admin</h1>
+            <div class="header-user">
+                <span id="userName">Admin</span> · <a href="../logout.html" style="color:#f5c518;">Logout</a>
+            </div>
+        </div>
+
+        <div class="nav">
+            <button class="active" onclick="showTab('dashboard')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</button>
+            <button onclick="showTab('tickets')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>Tickets</button>
+            <a href="chat.html" style="padding:10px 20px;background:#f5c518;border:none;color:#000;border-radius:8px;font-size:14px;text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Live Chat</a>
+            <button onclick="showTab('orders')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Orders</button>
+            <button onclick="showTab('users')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</button>
+            <button onclick="showTab('gallery')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Gallery</button>
+            <button onclick="showTab('logs')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>Logs</button>
+            <button id="manageAdminsBtn" onclick="showTab('admins')" style="display:none;background:#3d0f0f;border-color:#7f1d1d;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Manage Admins</button>
+            <a id="advancedLogsBtn" href="advanced-logs.html" style="display:none;padding:10px 20px;background:#450a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:8px;font-size:14px;text-decoration:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4M12 16h.01"/></svg>Advanced Logs</a>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div class="tab active" id="tab-dashboard">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                <span style="font-size:12px;color:#666;">Dashboard Overview</span>
+                <button class="btn btn-sm btn-ghost" onclick="refreshStats()" id="refreshStatsBtn" title="Refresh stats (Alt+R)">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" id="statUsers">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="statOrders">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Tickets</div>
+                    <div class="stat-value" id="statTickets">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Revenue</div>
+                    <div class="stat-value gold" id="statRevenue">-</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Recent Tickets</span>
+                    <button class="btn btn-sm btn-ghost" onclick="showTab('tickets')">View All</button>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentTickets">
+                            <tr><td colspan="4" class="empty">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Tab -->
+        <div class="tab" id="tab-tickets">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">All Tickets</span>
+                    <input type="text" id="ticketSearch" placeholder="Search..." style="padding:8px 12px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;width:200px;">
+                </div>
+                <div class="bulk-bar" id="ticketBulk">
+                    <span class="bulk-count"><span id="ticketBulkCount">0</span> selected</span>
+                    <button class="btn btn-sm btn-ghost" onclick="bulkTickets('closed')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>Close All</button>
+                    <button class="btn btn-sm btn-ghost" onclick="bulkTickets('open')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Reopen All</button>
+                    <button class="btn btn-sm btn-danger" onclick="bulkDeleteTickets()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Delete All</button>
+                    <button class="btn btn-sm btn-ghost" onclick="clearTicketSelection()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear</button>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllTickets" onchange="toggleAllTickets(this.checked)"></th>
+                                <th>Ticket ID</th>
+                                <th>User</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTable">
+                            <tr><td colspan="6" class="empty">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div class="tab" id="tab-orders">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">All Orders</span>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTable">
+                            <tr><td colspan="6" class="empty">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab" id="tab-users">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">All Users</span>
+                </div>
+                <div class="bulk-bar" id="userBulk">
+                    <span class="bulk-count"><span id="userBulkCount">0</span> selected</span>
+                    <button class="btn btn-sm btn-danger" onclick="bulkUsers(true)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Ban All</button>
+                    <button class="btn btn-sm btn-ghost" onclick="bulkUsers(false)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Unban All</button>
+                    <button class="btn btn-sm btn-ghost" onclick="clearUserSelection()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear</button>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllUsers" onchange="toggleAllUsers(this.checked)"></th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr><td colspan="7" class="empty">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Tab -->
+        <div class="tab" id="tab-gallery">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Gallery</span>
+                    <button class="btn btn-sm btn-primary" onclick="openUploadModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Upload</button>
+                </div>
+                <div class="card-body" style="padding:20px;">
+                    <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div class="tab" id="tab-logs">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Activity Logs</span>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <select id="logActionFilter" onchange="loadLogs()" style="padding:6px 10px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px;">
+                            <option value="">All Actions</option>
+                        </select>
+                        <button class="btn btn-sm btn-ghost" onclick="exportLogsCSV()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+                        <button class="btn btn-sm btn-ghost" onclick="loadLogs()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTable">
+                            <tr><td colspan="5" class="empty">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Admins Tab (Super Admin Only) -->
+        <div class="tab" id="tab-admins">
+            <div class="card" style="border-color:#7f1d1d;">
+                <div class="card-header" style="background:#2d0f0f;">
+                    <span class="card-title" style="color:#f87171;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:8px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Manage Admins</span>
+                    <button class="btn btn-sm btn-primary" onclick="openMakeAdminModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Admin</button>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Type</th>
+                                <th>Permissions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminsTable">
+                            <tr><td colspan="5" class="empty">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div class="modal" id="ticketModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">Ticket</span>
+                <button class="modal-close" onclick="closeModal('ticketModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="messages" id="ticketMessages"></div>
+                <div class="form-group">
+                    <label>Your Reply</label>
+                    <textarea id="replyText" rows="3" placeholder="Type your reply..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <select id="ticketStatus" style="padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+                    <option value="open">Open</option>
+                    <option value="pending">Pending</option>
+                    <option value="closed">Closed</option>
+                </select>
+                <button class="btn btn-ghost" onclick="closeModal('ticketModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="sendReply()">Send Reply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span class="modal-title">Upload Artwork</span>
+                <button class="modal-close" onclick="closeModal('uploadModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Image</label>
+                    <input type="file" id="artFile" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="artTitle" placeholder="Artwork title">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="artCategory">
+                        <option value="charcoal">Charcoal</option>
+                        <option value="anime">Anime</option>
+                        <option value="portrait">Portrait</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('uploadModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="uploadArt()">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Make Admin Modal (Super Admin Only) -->
+    <div class="modal" id="makeAdminModal">
+        <div class="modal-box">
+            <div class="modal-header" style="background:#2d0f0f;">
+                <span class="modal-title" style="color:#f87171;" id="makeAdminTitle">Add New Admin</span>
+                <button class="modal-close" onclick="closeModal('makeAdminModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="adminUserSelectGroup">
+                    <label>Select User</label>
+                    <select id="adminUserSelect" style="width:100%;padding:10px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+                        <option value="">Loading users...</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display:none;" id="adminEmailDisplay">
+                    <label>Email</label>
+                    <input type="text" id="editAdminEmail" disabled style="background:#222;">
+                </div>
+                <div class="form-group">
+                    <label style="margin-bottom:12px;display:block;">Permissions</label>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="perm_manage_orders">
+                            <span>Manage Orders</span>
+                            <span style="font-size:11px;color:#666;">- View, update, process orders</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="perm_manage_tickets">
+                            <span>Manage Tickets</span>
+                            <span style="font-size:11px;color:#666;">- Reply, close, delete tickets</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="perm_manage_gallery">
+                            <span>Manage Gallery</span>
+                            <span style="font-size:11px;color:#666;">- Upload, delete artwork</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="perm_manage_users">
+                            <span>Manage Users</span>
+                            <span style="font-size:11px;color:#666;">- Ban, unban users</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="perm_view_logs">
+                            <span>View Logs</span>
+                            <span style="font-size:11px;color:#666;">- Access activity logs</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('makeAdminModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAdmin()" id="saveAdminBtn">Make Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const API = '/api';
+    const SUPER_ADMIN_EMAILS = ['adeeb69@aol.com']; // Must match server
+    let currentTicketId = null;
+    let tickets = [];
+    let users = [];
+    let admins = [];
+    let currentUser = null;
+    let isSuperAdmin = false;
+    let userPermissions = {};
+    let selectedTickets = new Set();
+    let selectedUsers = new Set();
+    let editingAdminId = null;
+
+    // ===== HELPERS =====
+    let cachedToken = null;
+
+    function doLogout() {
+        // Call logout API to clear server-side cookies
+        fetch('/api/auth?action=logout', {
+            method: 'POST',
+            credentials: 'include'
+        }).finally(() => {
+            // Clear all client-side tokens
+            cachedToken = null;
+            try { localStorage.clear(); } catch(e) {}
+            try { sessionStorage.clear(); } catch(e) {}
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+            // Redirect
+            window.location.replace('../auth.html');
+        });
+    }
+
+    function getToken() {
+        // Return cached token if available
+        if (cachedToken) return cachedToken;
+
+        // Try URL hash first (passed from login)
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#token=')) {
+            cachedToken = decodeURIComponent(hash.substring(7));
+            // Store it everywhere
+            try {
+                localStorage.setItem('arthuzist_token', cachedToken);
+                sessionStorage.setItem('arthuzist_token', cachedToken);
+            } catch(e) {}
+            document.cookie = `arthuzist_client_token=${cachedToken};path=/;max-age=3600;SameSite=Lax`;
+            history.replaceState(null, '', window.location.pathname);
+            return cachedToken;
+        }
+
+        // Try localStorage
+        try {
+            cachedToken = localStorage.getItem('arthuzist_token');
+            if (cachedToken) return cachedToken;
+        } catch(e) {}
+
+        // Try sessionStorage
+        try {
+            cachedToken = sessionStorage.getItem('arthuzist_token');
+            if (cachedToken) return cachedToken;
+        } catch(e) {}
+
+        // Fallback to cookie
+        const match = document.cookie.match(/arthuzist_client_token=([^;]+)/);
+        if (match) {
+            cachedToken = match[1];
+            return cachedToken;
+        }
+        return null;
+    }
+
+    async function api(url, opts = {}) {
+        const token = getToken();
+        if (!token) {
+            location.href = '../auth.html';
+            return;
+        }
+        try {
+            const res = await fetch(API + url, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                ...opts
+            });
+            if (res.status === 401) {
+                // Clear everything and redirect
+                cachedToken = null;
+                try { localStorage.removeItem('arthuzist_token'); } catch(e) {}
+                try { sessionStorage.removeItem('arthuzist_token'); } catch(e) {}
+                document.cookie = 'arthuzist_client_token=;path=/;max-age=0';
+                location.href = '../auth.html';
+                return;
+            }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Error');
+            return data;
+        } catch(err) {
+            console.error('API error:', err);
+            throw err;
+        }
+    }
+
+    function toast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + type;
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function esc(s) {
+        if (!s) return '';
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function formatDate(d) {
+        return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // ===== TABS =====
+    function showTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = getToken();
+        if (!token) {
+            location.href = '../auth.html';
+            return;
+        }
+        try {
+            const data = await api('/auth?action=me');
+            if (!data?.user) {
+                location.href = '../auth.html';
+                return;
+            }
+            if (data.user.role !== 'admin') {
+                alert('Access denied. Admin only.');
+                location.href = '../auth.html';
+                return;
+            }
+            currentUser = data.user;
+            document.getElementById('userName').textContent = data.user.name;
+
+            // Check if super admin
+            isSuperAdmin = data.user.role === 'admin' && SUPER_ADMIN_EMAILS.includes(data.user.email);
+
+            // Get permissions (super admin has all)
+            if (isSuperAdmin) {
+                userPermissions = {
+                    manage_orders: true,
+                    manage_tickets: true,
+                    manage_gallery: true,
+                    manage_users: true,
+                    view_logs: true
+                };
+                document.getElementById('manageAdminsBtn').style.display = 'inline-flex';
+                document.getElementById('advancedLogsBtn').style.display = 'inline-flex';
+            } else {
+                userPermissions = data.user.admin_permissions || {};
+            }
+
+            // Show/hide tabs based on permissions
+            applyPermissions();
+            loadAll();
+        } catch (e) {
+            console.error('Auth error:', e);
+            location.href = '../auth.html';
+        }
+    });
+
+    // Apply permission-based visibility
+    function applyPermissions() {
+        const navButtons = document.querySelectorAll('.nav button');
+
+        // Hide all permission-specific tabs first (except Dashboard which everyone can see)
+        navButtons.forEach(btn => {
+            const onclick = btn.getAttribute('onclick') || '';
+
+            // Tickets tab - needs manage_tickets
+            if (onclick.includes("'tickets'")) {
+                btn.style.display = (isSuperAdmin || userPermissions.manage_tickets) ? 'inline-flex' : 'none';
+            }
+            // Orders tab - needs manage_orders
+            if (onclick.includes("'orders'")) {
+                btn.style.display = (isSuperAdmin || userPermissions.manage_orders) ? 'inline-flex' : 'none';
+            }
+            // Users tab - needs manage_users
+            if (onclick.includes("'users'")) {
+                btn.style.display = (isSuperAdmin || userPermissions.manage_users) ? 'inline-flex' : 'none';
+            }
+            // Gallery tab - needs manage_gallery
+            if (onclick.includes("'gallery'")) {
+                btn.style.display = (isSuperAdmin || userPermissions.manage_gallery) ? 'inline-flex' : 'none';
+            }
+            // Logs tab - needs view_logs
+            if (onclick.includes("'logs'")) {
+                btn.style.display = (isSuperAdmin || userPermissions.view_logs) ? 'inline-flex' : 'none';
+            }
+        });
+
+        // Hide Live Chat link if no ticket permission
+        const chatLink = document.querySelector('a[href="chat.html"]');
+        if (chatLink) {
+            chatLink.style.display = (isSuperAdmin || userPermissions.manage_tickets) ? 'inline-flex' : 'none';
+        }
+
+        // Show warning if no permissions at all
+        if (!isSuperAdmin && !Object.values(userPermissions).some(v => v)) {
+            document.querySelector('.container').innerHTML = `
+                <div style="text-align:center;padding:100px 20px;">
+                    <h2 style="color:#f87171;margin-bottom:20px;">No Permissions</h2>
+                    <p style="color:#888;">Your admin account has no permissions assigned.</p>
+                    <p style="color:#888;">Please contact the super admin to get access.</p>
+                    <a href="../auth.html" style="color:#f5c518;margin-top:20px;display:inline-block;">Logout</a>
+                </div>
+            `;
+        }
+    }
+
+    async function loadAll() {
+        loadStats();
+        loadTickets();
+        loadOrders();
+        loadUsers();
+        loadGallery();
+        loadLogs();
+        if (isSuperAdmin) loadAdmins();
+    }
+
+    // ===== STATS =====
+    async function refreshStats() {
+        const btn = document.getElementById('refreshStatsBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;animation:spin 1s linear infinite;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refreshing...';
+        }
+        await loadStats();
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh';
+        }
+        toast('Stats refreshed!');
+    }
+
+    async function loadStats() {
+        try {
+            const data = await api('/admin?action=stats');
+            const s = data.stats || {};
+            document.getElementById('statUsers').textContent = s.users?.total || 0;
+            document.getElementById('statOrders').textContent = s.orders?.total || 0;
+            document.getElementById('statTickets').textContent = (s.tickets?.open || 0) + (s.tickets?.pending || 0);
+            document.getElementById('statRevenue').textContent = '₹' + (s.orders?.revenue || 0).toLocaleString();
+
+            // Recent tickets
+            const recent = data.pendingTickets || [];
+            if (recent.length) {
+                document.getElementById('recentTickets').innerHTML = recent.map(t => `
+                    <tr>
+                        <td>
+                            <a href="chat.html?id=${t.id}" style="font-family:monospace;font-weight:bold;color:#f5c518;text-decoration:none;">${esc(t.ticket_number || t.id.slice(0,8))}</a>
+                            <div style="font-size:11px;color:#666;">${formatDate(t.created_at)}</div>
+                        </td>
+                        <td>${esc(t.subject)}</td>
+                        <td><span class="badge badge-${t.status}">${t.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="window.location='chat.html?id=${t.id}'" title="Chat"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+                            ${t.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="quickClose('${t.id}')" title="Close"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                document.getElementById('recentTickets').innerHTML = '<tr><td colspan="4" class="empty">No tickets</td></tr>';
+            }
+        } catch (e) {
+            console.error('Stats:', e);
+        }
+    }
+
+    // ===== TICKETS =====
+    async function loadTickets() {
+        try {
+            const data = await api('/tickets');
+            tickets = data.tickets || [];
+            renderTickets(tickets);
+        } catch (e) {
+            console.error('Tickets:', e);
+        }
+    }
+
+    function renderTickets(list) {
+        if (!list.length) {
+            document.getElementById('ticketsTable').innerHTML = '<tr><td colspan="6" class="empty">No tickets</td></tr>';
+            return;
+        }
+        document.getElementById('ticketsTable').innerHTML = list.map(t => `
+            <tr>
+                <td><input type="checkbox" class="ticket-cb" value="${t.id}" ${selectedTickets.has(t.id)?'checked':''} onchange="toggleTicket('${t.id}', this.checked)"></td>
+                <td>
+                    <a href="chat.html?id=${t.id}" style="font-family:monospace;font-weight:bold;color:#f5c518;font-size:13px;text-decoration:none;" title="Open in Chat">${esc(t.ticket_number || t.id.slice(0,8))}</a>
+                    <div style="font-size:11px;color:#666;margin-top:2px;">${formatDate(t.created_at)}</div>
+                </td>
+                <td>${esc(t.users?.name || 'Unknown')}</td>
+                <td style="max-width:200px;">
+                    <div style="font-weight:500;">${esc(t.subject)}</div>
+                    <div style="font-size:11px;color:#666;">${esc(t.category || 'General')}</div>
+                </td>
+                <td><span class="badge badge-${t.status}">${t.status}</span></td>
+                <td>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                        <button class="btn btn-sm btn-primary" onclick="window.location='chat.html?id=${t.id}'" title="Open Chat"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+                        <button class="btn btn-sm btn-ghost" onclick="openTicket('${t.id}')" title="Quick View"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        ${t.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="quickClose('${t.id}')" title="Close"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>` : `<button class="btn btn-sm btn-ghost" onclick="quickReopen('${t.id}')" title="Reopen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>`}
+                        <button class="btn btn-sm btn-danger" onclick="quickDelete('${t.id}')" title="Delete"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Search
+    document.getElementById('ticketSearch')?.addEventListener('input', e => {
+        const q = e.target.value.toLowerCase();
+        const filtered = tickets.filter(t =>
+            (t.ticket_number || '').toLowerCase().includes(q) ||
+            (t.subject || '').toLowerCase().includes(q)
+        );
+        renderTickets(filtered);
+    });
+
+    // Selection
+    function toggleTicket(id, checked) {
+        if (checked) selectedTickets.add(id);
+        else selectedTickets.delete(id);
+        updateTicketBulk();
+    }
+
+    function toggleAllTickets(checked) {
+        document.querySelectorAll('.ticket-cb').forEach(cb => {
+            cb.checked = checked;
+            if (checked) selectedTickets.add(cb.value);
+            else selectedTickets.delete(cb.value);
+        });
+        updateTicketBulk();
+    }
+
+    function updateTicketBulk() {
+        const bar = document.getElementById('ticketBulk');
+        const count = document.getElementById('ticketBulkCount');
+        if (selectedTickets.size > 0) {
+            bar.classList.add('show');
+            count.textContent = selectedTickets.size;
+        } else {
+            bar.classList.remove('show');
+        }
+    }
+
+    function clearTicketSelection() {
+        selectedTickets.clear();
+        document.querySelectorAll('.ticket-cb').forEach(cb => cb.checked = false);
+        document.getElementById('selectAllTickets').checked = false;
+        updateTicketBulk();
+    }
+
+    // Helper to add delay
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+
+    async function bulkTickets(status) {
+        if (!selectedTickets.size) return;
+        const count = selectedTickets.size;
+        const ids = [...selectedTickets]; // Copy before clearing
+        if (!confirm(`Change ${count} tickets to "${status}"?`)) return;
+
+        clearTicketSelection();
+        toast(`Processing ${count} tickets...`);
+        let success = 0;
+        let errors = [];
+
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            try {
+                // Update status only (skip auto message to avoid rate limits)
+                await api('/tickets/' + id, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status })
+                });
+                success++;
+                toast(`Processing... ${success}/${count}`);
+            } catch (e) {
+                console.error('Bulk update failed for', id, e);
+                errors.push(id);
+            }
+            // Small delay to avoid rate limits
+            if (i < ids.length - 1) await delay(200);
+        }
+
+        await loadAll();
+
+        if (errors.length > 0) {
+            toast(`Updated ${success}/${count} tickets. ${errors.length} failed.`, 'error');
+        } else {
+            toast(`Successfully updated ${success} tickets!`);
+        }
+    }
+
+    async function bulkDeleteTickets() {
+        if (!selectedTickets.size) return;
+        const count = selectedTickets.size;
+        const ids = [...selectedTickets];
+        if (!confirm(`⚠️ DELETE ${count} tickets permanently? This cannot be undone!`)) return;
+
+        clearTicketSelection();
+        toast(`Deleting ${count} tickets...`);
+        let success = 0;
+
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            try {
+                await api('/tickets/' + id, { method: 'DELETE' });
+                success++;
+                toast(`Deleting... ${success}/${count}`);
+            } catch (e) {
+                console.error('Delete failed for', id, e);
+            }
+            // Small delay to avoid rate limits
+            if (i < ids.length - 1) await delay(200);
+        }
+
+        await loadAll();
+        toast(`Deleted ${success}/${count} tickets`);
+    }
+
+    // ===== QUICK ACTIONS =====
+    async function quickClose(id) {
+        try {
+            // Add closing message
+            await api('/tickets/' + id + '/messages', {
+                method: 'POST',
+                body: JSON.stringify({ message: '🎉 This ticket has been resolved. Thank you for contacting Arthuzist Support! If you enjoyed our service, please leave us a review. Have a great day!' })
+            });
+            await api('/tickets/' + id, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'closed' })
+            });
+            loadAll();
+            toast('Ticket closed!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    async function quickReopen(id) {
+        try {
+            await api('/tickets/' + id + '/messages', {
+                method: 'POST',
+                body: JSON.stringify({ message: '🔄 This ticket has been reopened. Our team will continue assisting you.' })
+            });
+            await api('/tickets/' + id, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'open' })
+            });
+            loadAll();
+            toast('Ticket reopened!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    async function quickDelete(id) {
+        if (!confirm('⚠️ Delete this ticket permanently?')) return;
+        try {
+            await api('/tickets/' + id, { method: 'DELETE' });
+            loadAll();
+            toast('Ticket deleted!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    // ===== TICKET MODAL =====
+    async function openTicket(id) {
+        currentTicketId = id;
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+
+        document.getElementById('modalTitle').textContent = t.subject;
+        document.getElementById('ticketStatus').value = t.status;
+        document.getElementById('replyText').value = '';
+
+        try {
+            const data = await api('/tickets/' + id + '/messages');
+            const msgs = data.messages || [];
+            document.getElementById('ticketMessages').innerHTML = msgs.length ? msgs.map(m => `
+                <div class="msg ${m.is_admin ? 'admin' : 'user'}">
+                    <div class="msg-name">${esc(m.author_name || (m.is_admin ? 'Admin' : 'User'))}</div>
+                    <div class="msg-text">${esc(m.message || m.content)}</div>
+                </div>
+            `).join('') : '<div class="empty">No messages</div>';
+        } catch (e) {
+            document.getElementById('ticketMessages').innerHTML = '<div class="empty">Error loading messages</div>';
+        }
+
+        document.getElementById('ticketModal').classList.add('show');
+    }
+
+    async function sendReply() {
+        const text = document.getElementById('replyText').value.trim();
+        const status = document.getElementById('ticketStatus').value;
+        const t = tickets.find(x => x.id === currentTicketId);
+
+        if (!text && t?.status === status) {
+            toast('Enter a message or change status', 'error');
+            return;
+        }
+
+        try {
+            if (text) {
+                await api('/tickets/' + currentTicketId + '/messages', {
+                    method: 'POST',
+                    body: JSON.stringify({ message: text })
+                });
+            }
+            // Add closing message if status changed to closed
+            if (t && t.status !== status && status === 'closed') {
+                await api('/tickets/' + currentTicketId + '/messages', {
+                    method: 'POST',
+                    body: JSON.stringify({ message: '🎉 This ticket has been resolved. Thank you for contacting Arthuzist Support! If you enjoyed our service, please leave us a review. Have a great day!' })
+                });
+            }
+            if (t && t.status !== status) {
+                await api('/tickets/' + currentTicketId, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status })
+                });
+            }
+            closeModal('ticketModal');
+            loadAll();
+            toast('Reply sent!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    // ===== ORDERS =====
+    async function loadOrders() {
+        try {
+            const data = await api('/orders');
+            const orders = data.orders || [];
+            if (!orders.length) {
+                document.getElementById('ordersTable').innerHTML = '<tr><td colspan="6" class="empty">No orders</td></tr>';
+                return;
+            }
+            document.getElementById('ordersTable').innerHTML = orders.map(o => `
+                <tr>
+                    <td class="ticket-id" style="display:flex;align-items:center;gap:6px;">
+                        ${esc(o.order_number || o.id.slice(0,8))}
+                        <button class="btn-copy" onclick="copyToClipboard('${esc(o.order_number || o.id.slice(0,8))}')" title="Copy order number">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        </button>
+                    </td>
+                    <td>${esc(o.name || o.guest_name || 'N/A')}</td>
+                    <td>${esc(o.service_name || o.service)}</td>
+                    <td>₹${(o.total || 0).toLocaleString()}</td>
+                    <td><span class="badge badge-${o.status}">${o.status}</span></td>
+                    <td>${formatDate(o.created_at)}</td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            console.error('Orders:', e);
+        }
+    }
+
+    // ===== USERS =====
+    async function loadUsers() {
+        try {
+            const data = await api('/admin?action=users');
+            users = data.users || [];
+            renderUsers(users);
+        } catch (e) {
+            console.error('Users:', e);
+        }
+    }
+
+    function renderUsers(list) {
+        if (!list.length) {
+            document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="empty">No users</td></tr>';
+            return;
+        }
+        document.getElementById('usersTable').innerHTML = list.map(u => `
+            <tr>
+                <td><input type="checkbox" class="user-cb" value="${u.id}" ${u.role==='admin'?'disabled':''} ${selectedUsers.has(u.id)?'checked':''} onchange="toggleUser('${u.id}', this.checked)"></td>
+                <td>${esc(u.name)}</td>
+                <td>${esc(u.email)}</td>
+                <td>${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : 'User'}</td>
+                <td><span class="badge ${u.banned?'badge-closed':'badge-open'}">${u.banned?'Banned':'Active'}</span></td>
+                <td>${formatDate(u.created_at)}</td>
+                <td>${u.role !== 'admin' ? (u.banned
+                    ? `<button class="btn btn-sm btn-ghost" onclick="toggleBan('${u.id}', false)">Unban</button>`
+                    : `<button class="btn btn-sm btn-danger" onclick="toggleBan('${u.id}', true)">Ban</button>`
+                ) : ''}</td>
+            </tr>
+        `).join('');
+    }
+
+    function toggleUser(id, checked) {
+        if (checked) selectedUsers.add(id);
+        else selectedUsers.delete(id);
+        updateUserBulk();
+    }
+
+    function toggleAllUsers(checked) {
+        document.querySelectorAll('.user-cb:not(:disabled)').forEach(cb => {
+            cb.checked = checked;
+            if (checked) selectedUsers.add(cb.value);
+            else selectedUsers.delete(cb.value);
+        });
+        updateUserBulk();
+    }
+
+    function updateUserBulk() {
+        const bar = document.getElementById('userBulk');
+        const count = document.getElementById('userBulkCount');
+        if (selectedUsers.size > 0) {
+            bar.classList.add('show');
+            count.textContent = selectedUsers.size;
+        } else {
+            bar.classList.remove('show');
+        }
+    }
+
+    function clearUserSelection() {
+        selectedUsers.clear();
+        document.querySelectorAll('.user-cb').forEach(cb => cb.checked = false);
+        document.getElementById('selectAllUsers').checked = false;
+        updateUserBulk();
+    }
+
+    async function bulkUsers(ban) {
+        if (!selectedUsers.size) return;
+        if (!confirm(`${ban ? 'Ban' : 'Unban'} ${selectedUsers.size} users?`)) return;
+
+        for (const id of selectedUsers) {
+            try {
+                await api('/admin?action=ban&id=' + id, {
+                    method: 'POST',
+                    body: JSON.stringify({ banned: ban })
+                });
+            } catch (e) {}
+        }
+        clearUserSelection();
+        loadUsers();
+        toast(`${ban ? 'Banned' : 'Unbanned'} users`);
+    }
+
+    async function toggleBan(id, ban) {
+        if (!confirm(ban ? 'Ban this user?' : 'Unban this user?')) return;
+        try {
+            await api('/admin?action=ban&id=' + id, {
+                method: 'POST',
+                body: JSON.stringify({ banned: ban })
+            });
+            loadUsers();
+            toast(ban ? 'User banned' : 'User unbanned');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    // ===== GALLERY =====
+    let artImage = null;
+
+    async function loadGallery() {
+        try {
+            const data = await api('/gallery');
+            const items = data.gallery || [];
+            if (!items.length) {
+                document.getElementById('galleryGrid').innerHTML = '<div class="empty" style="grid-column:1/-1;">No artwork yet</div>';
+                return;
+            }
+            document.getElementById('galleryGrid').innerHTML = items.map(i => `
+                <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#222;">
+                    <img src="${i.image_url || i.image}" style="width:100%;height:100%;object-fit:cover;" alt="${esc(i.title)}">
+                    <div style="position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,0.8));font-size:11px;color:#fff;">
+                        ${esc(i.title)}
+                    </div>
+                    <button onclick="deleteArt('${i.id}')" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:#f87171;border:none;color:#fff;cursor:pointer;font-size:16px;" title="Delete">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Gallery:', e);
+        }
+    }
+
+    function openUploadModal() {
+        document.getElementById('artFile').value = '';
+        document.getElementById('artTitle').value = '';
+        artImage = null;
+        document.getElementById('uploadModal').classList.add('show');
+    }
+
+    document.getElementById('artFile')?.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            toast('Please select an image file (JPG, PNG, GIF, WebP)', 'error');
+            e.target.value = '';
+            artImage = null;
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast('Image too large. Max 5MB allowed.', 'error');
+            e.target.value = '';
+            artImage = null;
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => artImage = reader.result;
+        reader.readAsDataURL(file);
+    });
+
+    async function uploadArt() {
+        const title = document.getElementById('artTitle').value.trim();
+        const category = document.getElementById('artCategory').value;
+        if (!artImage || !title) {
+            toast('Select image and enter title', 'error');
+            return;
+        }
+        try {
+            await api('/gallery', {
+                method: 'POST',
+                body: JSON.stringify({ image: artImage, title, category })
+            });
+            closeModal('uploadModal');
+            loadGallery();
+            toast('Uploaded!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    async function deleteArt(id) {
+        if (!confirm('Delete this artwork?')) return;
+        try {
+            await api('/gallery/' + id, { method: 'DELETE' });
+            loadGallery();
+            toast('Deleted');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    // ===== LOGS =====
+    let cachedLogs = [];
+
+    function exportLogsCSV() {
+        if (!cachedLogs.length) {
+            toast('No logs to export', 'error');
+            return;
+        }
+
+        const headers = ['Time', 'User', 'Email', 'Action', 'Details', 'IP Address'];
+        const rows = cachedLogs.map(l => [
+            new Date(l.created_at).toISOString(),
+            l.users?.name || 'System',
+            l.users?.email || '',
+            l.action,
+            JSON.stringify(l.details || {}),
+            l.ip_address || ''
+        ]);
+
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `arthuzist-logs-${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        toast('Logs exported successfully!');
+    }
+
+    async function loadLogs() {
+        try {
+            const actionFilter = document.getElementById('logActionFilter')?.value || '';
+            let url = '/admin?action=logs&limit=100';
+            if (actionFilter) url += '&filterAction=' + encodeURIComponent(actionFilter);
+
+            const data = await api(url);
+            const logs = data.logs || [];
+            cachedLogs = logs; // Cache for CSV export
+
+            // Populate action filter dropdown
+            const filterSelect = document.getElementById('logActionFilter');
+            if (filterSelect && data.actionTypes) {
+                const currentVal = filterSelect.value;
+                filterSelect.innerHTML = '<option value="">All Actions</option>' +
+                    data.actionTypes.map(a => `<option value="${esc(a)}" ${a === currentVal ? 'selected' : ''}>${esc(a)}</option>`).join('');
+            }
+
+            if (!logs.length) {
+                document.getElementById('logsTable').innerHTML = '<tr><td colspan="5" class="empty">No logs found</td></tr>';
+                return;
+            }
+
+            document.getElementById('logsTable').innerHTML = logs.map(l => `
+                <tr>
+                    <td style="font-size:12px;color:#888;">${formatDateTime(l.created_at)}</td>
+                    <td>
+                        <div style="font-size:13px;">${esc(l.users?.name || 'System')}</div>
+                        <div style="font-size:11px;color:#666;">${esc(l.users?.email || '')}</div>
+                    </td>
+                    <td><span class="badge ${getActionBadge(l.action)}">${esc(l.action)}</span></td>
+                    <td style="max-width:200px;font-size:12px;color:#888;">${formatDetails(l.details)}</td>
+                    <td style="font-size:11px;color:#666;font-family:monospace;">${esc(l.ip_address?.substring(0,15) || '-')}</td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            console.error('Logs:', e);
+            document.getElementById('logsTable').innerHTML = '<tr><td colspan="5" class="empty">Failed to load logs</td></tr>';
+        }
+    }
+
+    function formatDateTime(d) {
+        const date = new Date(d);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+               date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getActionBadge(action) {
+        if (action?.includes('LOGIN') || action?.includes('REGISTER')) return 'badge-open';
+        if (action?.includes('FAILED') || action?.includes('BLOCKED') || action?.includes('DELETE')) return 'badge-closed';
+        if (action?.includes('UPDATE') || action?.includes('CREATED')) return 'badge-pending';
+        return '';
+    }
+
+    function formatDetails(details) {
+        if (!details) return '-';
+        try {
+            const obj = typeof details === 'string' ? JSON.parse(details) : details;
+            return Object.entries(obj).slice(0, 3).map(([k, v]) => `${k}: ${String(v).substring(0, 30)}`).join(', ');
+        } catch {
+            return String(details).substring(0, 50);
+        }
+    }
+
+    // ===== ADMIN MANAGEMENT (Super Admin Only) =====
+    async function loadAdmins() {
+        if (!isSuperAdmin) return;
+        try {
+            const data = await api('/admin?action=admins');
+            admins = data.admins || [];
+            renderAdmins(admins);
+        } catch (e) {
+            console.error('Admins:', e);
+            document.getElementById('adminsTable').innerHTML = '<tr><td colspan="5" class="empty">Failed to load admins</td></tr>';
+        }
+    }
+
+    function renderAdmins(list) {
+        if (!list.length) {
+            document.getElementById('adminsTable').innerHTML = '<tr><td colspan="5" class="empty">No admins</td></tr>';
+            return;
+        }
+        document.getElementById('adminsTable').innerHTML = list.map(a => {
+            const perms = a.permissions || {};
+            const permList = Object.entries(perms)
+                .filter(([k, v]) => v)
+                .map(([k]) => k.replace('manage_', '').replace('view_', ''))
+                .join(', ') || 'None';
+
+            return `
+            <tr>
+                <td>${esc(a.name)}</td>
+                <td>${esc(a.email)}</td>
+                <td>${a.is_super_admin
+                    ? '<span class="badge" style="background:#3d0f0f;color:#f87171;">Super Admin</span>'
+                    : '<span class="badge badge-admin">Admin</span>'}</td>
+                <td style="font-size:12px;color:#888;">${a.is_super_admin ? 'All Permissions' : esc(permList)}</td>
+                <td>
+                    ${!a.is_super_admin ? `
+                        <button class="btn btn-sm btn-ghost" onclick="editAdminPermissions('${a.id}')" title="Edit Permissions"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button class="btn btn-sm btn-danger" onclick="removeAdmin('${a.id}')" title="Remove Admin"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    ` : '<span style="color:#666;font-size:12px;">Protected</span>'}
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    async function openMakeAdminModal() {
+        editingAdminId = null;
+        document.getElementById('makeAdminTitle').textContent = 'Add New Admin';
+        document.getElementById('saveAdminBtn').textContent = 'Make Admin';
+        document.getElementById('adminUserSelectGroup').style.display = 'block';
+        document.getElementById('adminEmailDisplay').style.display = 'none';
+
+        // Reset checkboxes
+        document.getElementById('perm_manage_orders').checked = false;
+        document.getElementById('perm_manage_tickets').checked = false;
+        document.getElementById('perm_manage_gallery').checked = false;
+        document.getElementById('perm_manage_users').checked = false;
+        document.getElementById('perm_view_logs').checked = false;
+
+        // Load non-admin users for selection
+        const select = document.getElementById('adminUserSelect');
+        select.innerHTML = '<option value="">Loading...</option>';
+
+        try {
+            const data = await api('/admin?action=users&limit=100');
+            const nonAdminUsers = (data.users || []).filter(u => u.role !== 'admin' && !u.banned);
+
+            if (!nonAdminUsers.length) {
+                select.innerHTML = '<option value="">No eligible users</option>';
+            } else {
+                select.innerHTML = '<option value="">Select a user...</option>' +
+                    nonAdminUsers.map(u => `<option value="${u.id}">${esc(u.name)} (${esc(u.email)})</option>`).join('');
+            }
+        } catch (e) {
+            select.innerHTML = '<option value="">Error loading users</option>';
+        }
+
+        document.getElementById('makeAdminModal').classList.add('show');
+    }
+
+    function editAdminPermissions(adminId) {
+        const admin = admins.find(a => a.id === adminId);
+        if (!admin) return;
+
+        editingAdminId = adminId;
+        document.getElementById('makeAdminTitle').textContent = 'Edit Admin Permissions';
+        document.getElementById('saveAdminBtn').textContent = 'Save Changes';
+        document.getElementById('adminUserSelectGroup').style.display = 'none';
+        document.getElementById('adminEmailDisplay').style.display = 'block';
+        document.getElementById('editAdminEmail').value = admin.email;
+
+        // Set current permissions
+        const perms = admin.permissions || {};
+        document.getElementById('perm_manage_orders').checked = !!perms.manage_orders;
+        document.getElementById('perm_manage_tickets').checked = !!perms.manage_tickets;
+        document.getElementById('perm_manage_gallery').checked = !!perms.manage_gallery;
+        document.getElementById('perm_manage_users').checked = !!perms.manage_users;
+        document.getElementById('perm_view_logs').checked = !!perms.view_logs;
+
+        document.getElementById('makeAdminModal').classList.add('show');
+    }
+
+    async function saveAdmin() {
+        const permissions = {
+            manage_orders: document.getElementById('perm_manage_orders').checked,
+            manage_tickets: document.getElementById('perm_manage_tickets').checked,
+            manage_gallery: document.getElementById('perm_manage_gallery').checked,
+            manage_users: document.getElementById('perm_manage_users').checked,
+            view_logs: document.getElementById('perm_view_logs').checked
+        };
+
+        // Must have at least one permission
+        if (!Object.values(permissions).some(v => v)) {
+            toast('Select at least one permission', 'error');
+            return;
+        }
+
+        let userId = editingAdminId;
+        if (!userId) {
+            userId = document.getElementById('adminUserSelect').value;
+            if (!userId) {
+                toast('Select a user', 'error');
+                return;
+            }
+        }
+
+        try {
+            await api('/admin?action=manage-admin', {
+                method: 'POST',
+                body: JSON.stringify({ userId, permissions })
+            });
+            closeModal('makeAdminModal');
+            loadAll();
+            toast(editingAdminId ? 'Permissions updated!' : 'Admin added!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    async function removeAdmin(adminId) {
+        const admin = admins.find(a => a.id === adminId);
+        if (!admin) return;
+
+        if (!confirm(`Remove admin privileges from ${admin.name} (${admin.email})?`)) return;
+
+        try {
+            await api('/admin?action=remove-admin&id=' + adminId, { method: 'POST' });
+            loadAll();
+            toast('Admin removed!');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
+
+    // ===== MODAL =====
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+
+    // ===== CLIPBOARD =====
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast('Copied to clipboard!');
+        } catch (e) {
+            // Fallback for older browsers
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            toast('Copied to clipboard!');
+        }
+    }
+
+    // ===== KEYBOARD SHORTCUTS =====
+    document.addEventListener('keydown', e => {
+        // Close modals with Escape
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+            return;
+        }
+
+        // Only trigger shortcuts when not in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            return;
+        }
+
+        // Tab navigation with number keys (1-7)
+        const tabs = ['dashboard', 'tickets', 'orders', 'users', 'gallery', 'logs', 'admins'];
+        const keyNum = parseInt(e.key);
+        if (keyNum >= 1 && keyNum <= 7) {
+            e.preventDefault();
+            showTab(tabs[keyNum - 1]);
+            return;
+        }
+
+        // Shortcuts with modifier keys
+        if (e.altKey || e.ctrlKey) {
+            switch(e.key.toLowerCase()) {
+                case 'd': e.preventDefault(); showTab('dashboard'); break;
+                case 't': e.preventDefault(); showTab('tickets'); break;
+                case 'o': e.preventDefault(); showTab('orders'); break;
+                case 'u': e.preventDefault(); showTab('users'); break;
+                case 'g': e.preventDefault(); showTab('gallery'); break;
+                case 'l': e.preventDefault(); showTab('logs'); break;
+                case 'r': e.preventDefault(); loadAll(); toast('Refreshed!'); break;
+            }
+        }
+    });
+
+    // Show keyboard shortcuts hint
+    console.log('%cKeyboard Shortcuts:', 'color: #f5c518; font-weight: bold;');
+    console.log('1-7: Switch tabs | Alt+D: Dashboard | Alt+T: Tickets | Alt+O: Orders | Alt+R: Refresh');
+    </script>
+</body>
+</html>

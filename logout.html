@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logging out...</title>
+    <style>
+        body { background: #111; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .msg { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="msg">
+        <h2>Logging out...</h2>
+        <p>Please wait</p>
+    </div>
+    <script>
+        // Call logout API
+        fetch('/api/auth?action=logout', {
+            method: 'POST',
+            credentials: 'include'
+        }).catch(() => {}).finally(() => {
+            // Clear everything
+            try { localStorage.clear(); } catch(e) {}
+            try { sessionStorage.clear(); } catch(e) {}
+
+            // Clear all cookies
+            document.cookie.split(";").forEach(c => {
+                const name = c.split("=")[0].trim();
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/api";
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/api/auth";
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/admin";
+            });
+
+            // Redirect after short delay
+            setTimeout(() => {
+                window.location.href = '/auth.html';
+            }, 500);
+        });
+    </script>
+</body>
+</html>
