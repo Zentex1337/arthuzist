@@ -246,7 +246,6 @@
 
     <script>
     const API = '/api';
-    const SUPER_ADMIN_EMAILS = ['adeeb69@aol.com'];
     let allUsers = [];
     let allCustomers = [];
     let currentUser = null;
@@ -352,8 +351,8 @@
             currentUser = data.user;
             document.getElementById('adminEmail').textContent = data.user.email;
 
-            // Check super admin
-            if (!SUPER_ADMIN_EMAILS.includes(data.user.email)) {
+            // Check super admin (from server)
+            if (!data.user.is_super_admin) {
                 document.getElementById('mainContent').style.display = 'none';
                 document.getElementById('accessDenied').style.display = 'block';
                 return;

@@ -508,7 +508,6 @@
 
     <script>
     const API = '/api';
-    const SUPER_ADMIN_EMAILS = ['adeeb69@aol.com']; // Must match server
     let currentTicketId = null;
     let tickets = [];
     let users = [];
@@ -658,8 +657,8 @@
             currentUser = data.user;
             document.getElementById('userName').textContent = data.user.name;
 
-            // Check if super admin
-            isSuperAdmin = data.user.role === 'admin' && SUPER_ADMIN_EMAILS.includes(data.user.email);
+            // Check if super admin (from server)
+            isSuperAdmin = data.user.is_super_admin === true;
 
             // Get permissions (super admin has all)
             if (isSuperAdmin) {

@@ -13,7 +13,7 @@ const {
     generateAccessToken, generateRefreshToken, verifyRefreshToken,
     hashToken, createCookieHeader, parseCookies
 } = require('../../lib/auth');
-const { handleCors, requireAuth, checkRateLimit, getClientIP, getUserAgent } = require('../../lib/middleware');
+const { handleCors, requireAuth, checkRateLimit, getClientIP, getUserAgent, isSuperAdmin } = require('../../lib/middleware');
 const { validateRegister, validateLogin } = require('../../lib/validators');
 const { logActivity } = require('../../lib/logger');
 
@@ -256,7 +256,17 @@ async function handleMe(req, res) {
         const user = await requireAuth(req, res);
         if (!user) return;
 
-        res.status(200).json({ success: true, user: { id: user.id, email: user.email, name: user.name, role: user.role, admin_permissions: user.admin_permissions } });
+        res.status(200).json({
+            success: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                admin_permissions: user.admin_permissions,
+                is_super_admin: isSuperAdmin(user)
+            }
+        });
     } catch (error) {
         console.error('Get user error:', error);
         res.status(500).json({ error: 'Failed to get user' });
