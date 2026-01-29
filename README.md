@@ -1,110 +1,117 @@
-# Arthuzist v3.0 - Complete Art Commission Website
+<div align="center">
 
-A dark gothic themed website with full functionality including:
-- Automated Razorpay payments
+# Arthuzist
+
+**Art Commission Platform with Payments & Admin Dashboard**
+
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Razorpay](https://img.shields.io/badge/Razorpay-0C2451?style=for-the-badge&logo=razorpay&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000?style=for-the-badge&logo=vercel&logoColor=white)
+
+</div>
+
+---
+
+## Features
+
+**Payments**
+- Razorpay integration with auto-checkout
+- Dynamic pricing based on service/size/addons
 - Auto-ticket creation after payment
-- Complete admin dashboard with user management
-- Activity logging system
-- Security features (XSS prevention, rate limiting)
-- Performance optimized
 
-## 🔐 ADMIN LOGIN
+**Admin Dashboard**
+- Order management with status tracking
+- Ticket system with replies
+- Gallery uploads
+- User management (ban/unban)
+- Activity logs with export
 
-**Email:** arthuzist@gmail.com
-**Password:** arthuzist@2024
-
-⚠️ CHANGE THE PASSWORD IN `auth.html` and `js/app.js` before deploying!
-
-## ✨ Features
-
-### Payment Flow (Automated)
-1. Customer fills form → Selects service/size/addons
-2. Price auto-calculated
-3. Click "Proceed to Payment" → Order summary
-4. Click "Pay Now" → Razorpay checkout
-5. Payment success → Order saved + **Ticket auto-created**
-6. Admin sees order + ticket in dashboard
-
-### Admin Dashboard
-- **Dashboard**: Stats overview, recent orders
-- **Orders**: All orders with status
-- **Tickets**: Reply to tickets, change status
-- **Gallery**: Upload/delete artworks
-- **Users**: View all users, Ban/Unban users
-- **Logs**: Activity logs, Export to .txt file
-
-### Security Features
-- XSS Prevention (input sanitization)
-- Rate Limiting (form submissions)
-- Password hashing
+**Security**
+- XSS prevention & input sanitization
+- Rate limiting on forms
+- JWT authentication
+- Password hashing with bcrypt
 - Admin-only route protection
-- User ban system
 
-### Logging System
-All actions are logged:
-- User signups/logins
-- Admin logins
-- Ticket creation/replies
-- Payment events
-- User bans/unbans
-- Artwork uploads/deletions
+---
 
-## 📁 Files
+## Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Node.js, Vercel Serverless |
+| Database | Supabase (PostgreSQL) |
+| Payments | Razorpay |
+| Auth | JWT, bcrypt |
+
+---
+
+## Project Structure
 
 ```
-arthuzist-v3/
-├── index.html          # Main page + payment
-├── auth.html           # Login/Signup + User dashboard
-├── tickets.html        # User ticket system
-├── testimonials.html   # Reviews page
-├── css/styles.css      # Optimized CSS
-├── js/app.js           # Complete JS + security
-├── admin/index.html    # Full admin dashboard
+├── index.html           # Landing + payment flow
+├── auth.html            # Login/signup
+├── tickets.html         # User tickets
+├── admin/index.html     # Admin dashboard
 ├── api/
-│   ├── create-order.js
+│   ├── create-order.js  # Razorpay order creation
 │   └── verify-payment.js
-├── vercel.json
-└── package.json
+├── server.js            # Express server
+├── js/app.js            # Frontend logic
+└── css/styles.css
 ```
 
-## 🚀 Deployment
+---
 
-### 1. Update Credentials
-Edit `js/app.js`:
-```javascript
-RAZORPAY_KEY_ID: 'rzp_test_YOUR_KEY',
-ADMIN_EMAIL: 'your@email.com',
-ADMIN_PASSWORD: 'your_secure_password',
-```
+## Setup
 
-Edit `auth.html`:
-```javascript
-ADMIN_EMAIL: 'your@email.com',
-ADMIN_PASSWORD: 'your_secure_password',
-```
-
-### 2. Deploy to Vercel
+**1. Clone & Install**
 ```bash
-npm i -g vercel
-vercel login
-cd arthuzist-v3
+git clone https://github.com/Zentex1337/arthuzist.git
+cd arthuzist
+npm install
+```
+
+**2. Environment Variables**
+```bash
+cp .env.example .env
+```
+
+Add your keys:
+```
+RAZORPAY_KEY_ID=your_key
+RAZORPAY_KEY_SECRET=your_secret
+SUPABASE_URL=your_url
+SUPABASE_KEY=your_key
+JWT_SECRET=your_secret
+```
+
+**3. Deploy**
+```bash
 vercel
 vercel env add RAZORPAY_KEY_ID
 vercel env add RAZORPAY_KEY_SECRET
 vercel --prod
 ```
 
-## 💰 Pricing
-- Charcoal Portrait: ₹1,500
-- Anime Art: ₹1,000
-- Couple Portrait: ₹3,000
-- A3 Size: +₹1,500
-- Framing: +₹600
-- Express: +₹500
+---
 
-## 📧 Contact
-- Email: arthuzist@gmail.com
-- Instagram: @arthuzist
+## Screenshots
+
+> Add screenshots of your landing page, admin dashboard, and payment flow here
 
 ---
-Made with 🖤 | v3.0
+
+## License
+
+MIT
+
+---
+
+<div align="center">
+
+**[Live Demo](https://arthuzist.vercel.app)** · **[Report Bug](https://github.com/Zentex1337/arthuzist/issues)**
+
+</div>
