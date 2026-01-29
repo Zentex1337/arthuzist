@@ -100,7 +100,16 @@ vercel --prod
 
 ## Screenshots
 
-> Add screenshots of your landing page, admin dashboard, and payment flow here
+### Landing Page
+![Landing Page](screenshots/landing.png)
+
+### Payment Flow
+![Payment Flow](screenshots/payment.png)
+
+### Admin Dashboard
+![Admin Dashboard](screenshots/admin.png)
+
+> Add your screenshots to the `screenshots/` folder
 
 ---
 
